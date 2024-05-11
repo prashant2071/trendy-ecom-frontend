@@ -3,6 +3,8 @@ import { Button, CircularProgress, TextField } from "@material-ui/core";
 import { Col, Container, Form, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { errorToast, successToast } from "../services/toastConfig";
+import { toast } from "react-toastify";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -17,9 +19,11 @@ const Login = () => {
     const response = await axios.post(import.meta.env.VITE_SERVER_URL+"/api/v1/auth/login",{email,password})
     console.log("the response ",response);
     if(response.data.status==="success"){
-      console.log("success")
-      setisLoading(false);
-      
+      successToast("login successfully")
+      setisLoading(false); 
+    }
+    else{
+      errorToast("emmail, or password incorrect")
     }
     console.log("the response is ",response)
 
