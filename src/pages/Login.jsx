@@ -13,8 +13,11 @@ const Login = () => {
     e.preventDefault();
     setisLoading(true)
     console.log("the email is",email,"password is ",password)
+    console.log("the email",email)
     const response = await axios.post(import.meta.env.VITE_SERVER_URL+"/api/v1/auth/login",{email,password})
-    if(response.status==="success"){
+    console.log("the response ",response);
+    if(response.data.status==="success"){
+      console.log("success")
       setisLoading(false);
       
     }
