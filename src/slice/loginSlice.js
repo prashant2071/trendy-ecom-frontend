@@ -4,16 +4,26 @@
 const initialState ={
     isLoggedIn:false,
     token:'',
-    role:''
+    role:'',
+    email:"",
+    name:""
 
 }
 
 const loginSlice = createSlice({
     name:"Auth",
     initialState:initialState,
-    reducers:{ }
+    reducers:{
+        login:(state,data) =>{
+            state.isLoggedIn = true;
+            state.token = data.payload.token;
+            state.role = data.payload.role;
+            state.name = data.payload.name;
+            state.email = data.payload.email;
+        }
+     }
 })
 
 export default loginSlice.reducer;
 
-export const {} = loginSlice.actions
+export const {login} = loginSlice.actions

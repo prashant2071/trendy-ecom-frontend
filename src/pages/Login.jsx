@@ -1,33 +1,54 @@
 import React, { useState } from "react";
 import { Button, CircularProgress, TextField } from "@material-ui/core";
 import { Col, Container, Form, Row } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { errorToast, successToast } from "../services/toastConfig";
+import { login } from "../slice/loginSlice";
+import {
+  errorToast,
+  successToast,
+  warningToast,
+} from "../services/toastConfig";
 import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setisLoading] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const loginSubmitHandler = async (e) =>{
+  const loginSubmitHandler = async (e) => {
     e.preventDefault();
-    setisLoading(true)
-    console.log("the email is",email,"password is ",password)
-    console.log("the email",email)
-    const response = await axios.post(import.meta.env.VITE_SERVER_URL+"/api/v1/auth/login",{email,password})
-    console.log("the response ",response);
-    if(response.data.status==="success"){
-      successToast("login successfully")
-      setisLoading(false); 
+    setisLoading(true);
+    // console.log("the email is", email, "password is ", password);
+    // console.log("the email", email);
+    try {
+      const { data } = await axios.post(
+        import.meta.env.VITE_SERVER_URL + "/api/v1/auth/login",
+        { email, password }
+      );
+      console.log("the response ", data.status == "success");
+      if (data.status=="success") {
+        console.log("the message", data);
+        successToast("login successfully");
+        let loginData = {
+          name: data.authData.name,
+          email: data.authData.email,
+          role: data.authData.role,
+          token: data.token,
+        };
+        dispatch(login(loginData));
+        navigate('/home')
+      }
+      setisLoading(false);
+    } catch (err) {
+      errorToast(err.response.data.error);
+      setisLoading(false);
     }
-    else{
-      errorToast("emmail, or password incorrect")
-    }
-    console.log("the response is ",response)
+  };
 
-  }
   return (
     <Container>
       <Row className="justify-content-md-center">
@@ -65,6 +86,7 @@ const Login = () => {
                 setPassword(e.target.value);
               }}
             ></TextField>
+
             <Button
               type="submit"
               variant="contained"
@@ -73,13 +95,14 @@ const Login = () => {
               disabled={loading}
               onClick={loginSubmitHandler}
             >
-              {loading?<CircularProgress/>:<>Sign in</> }
+              {loading ? <CircularProgress /> : <>Sign in</>}
             </Button>
           </Form>
           <Row>
-            <Col>New User ? <Link to={"/signup" }>Register</Link></Col>
+            <Col>
+              New User ? <Link to={"/signup"}>Register</Link>
+            </Col>
             <Col className="text-right">Forget password</Col>
-
           </Row>
         </Col>
       </Row>

@@ -3,37 +3,49 @@ import { Button, CircularProgress, TextField } from "@material-ui/core";
 import { Col, Container, Form, Row } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { errorToast, warningToast } from "../services/toastConfig";
 
 const SignUp = () => {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setisLoading] = useState(false);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
-  const SignUpSubmitHandler = async (e) =>{
+  const SignUpSubmitHandler = async (e) => {
     e.preventDefault();
-    setisLoading(true)
-    console.log("the email is",email,"password is ",password)
-    console.log("the email",email)
-    const response = await axios.post(import.meta.env.VITE_SERVER_URL+"/api/v1/auth/register",{name,email,password})
-    console.log("the response.data ",response.data.status);
-    if(response.data.status=="true"){
-      console.log("success")
-      navigate('/')
-      setisLoading(false);
-      
+    setisLoading(true);
+    console.log("the email is", email, "password is ", password);
+    console.log("the email", email);
+    if (password !== confirmPassword) {
+      warningToast("password and confirm doesn't match");
+    } else {
+      try {
+        const { data } = await axios.post(
+          import.meta.env.VITE_SERVER_URL + "/api/v1/auth/register",
+          { name, email, password }
+        );
+        console.log("the response.data ", response.data.status);
+        if (data.status == "true") {
+          console.log("success");
+          navigate("/");
+        }
+        setisLoading(false);
+      } catch ({response}) {
+        errorToast(response.data.error)
+        console.log("the error is ", response.data.error);
+        setisLoading(false);
+      }
     }
-    console.log("the response is ",response)
-
-  }
+  };
   return (
     <Container>
       <Row className="justify-content-md-center">
         <Col xs={12} md={6}>
           <h1 className="mb-4">Sign In</h1>
           <Form onSubmit={SignUpSubmitHandler}>
-          <TextField
+            <TextField
               variant="outlined"
               type="text"
               placeholder="name"
@@ -80,6 +92,21 @@ const SignUp = () => {
                 setPassword(e.target.value);
               }}
             ></TextField>
+            <TextField
+              variant="outlined"
+              type="password"
+              placeholder="*******"
+              required
+              fullWidth
+              id="confirmPassword"
+              name="confirmPassword"
+              className="mb-2"
+              autoComplete="confirmPassword"
+              label="Confirm Password"
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+              }}
+            ></TextField>
             <Button
               type="submit"
               variant="contained"
@@ -87,12 +114,13 @@ const SignUp = () => {
               fullWidth
               disabled={loading}
             >
-              {loading?<CircularProgress/>:<>Sign in</> }
+              {loading ? <CircularProgress /> : <>Sign in</>}
             </Button>
           </Form>
           <Row>
-            <Col>Already have an account ? <Link to={"/" }>sign in</Link></Col>
-
+            <Col>
+              Already have an account ? <Link to={"/"}>sign in</Link>
+            </Col>
           </Row>
         </Col>
       </Row>
